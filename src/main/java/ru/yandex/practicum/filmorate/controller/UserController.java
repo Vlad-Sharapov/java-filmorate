@@ -29,9 +29,10 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
+        int id = incrementUserId();
         checkValidation(user);
         changeEmptyName(user);
-        user.setId(++userId);
+        user.setId(id);
         users.put(user.getId(), user);
         log.info("Добавлен пользователь: {}", user);
         return user;
@@ -40,11 +41,11 @@ public class UserController {
     @PutMapping
     public User update(@Valid @RequestBody User user) {
         User saveUser = users.get(user.getId());
-                if (saveUser == null) {
-                    throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-                }
-                checkValidation(user);
-            users.put(user.getId(), user);
+        if (saveUser == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        checkValidation(user);
+        users.put(user.getId(), user);
         log.info("Фильм изменен с {} на {}", saveUser, user);
         return user;
     }
@@ -60,6 +61,10 @@ public class UserController {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
+    }
+
+    private int incrementUserId() {
+        return ++userId;
     }
 
 }

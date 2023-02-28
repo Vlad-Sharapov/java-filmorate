@@ -20,7 +20,7 @@ import java.util.Map;
 @Slf4j
 public class FilmController {
 
-    Map<Integer, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
     private Integer filmId = 0;
 
     @GetMapping
@@ -31,8 +31,9 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
+        Integer id = incrementFilmId();
         checkValidation(film);
-        film.setId(++filmId);
+        film.setId(id);
         films.put(film.getId(), film);
         log.info("Добавлен фильм: {}", film);
         return film;
@@ -42,7 +43,7 @@ public class FilmController {
     public Film update(@Valid @RequestBody Film film) {
         Film saveFilm = films.get(film.getId());
         if (saveFilm == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "HTTP Status will be NOT FOUND (CODE 404)\n");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "HTTP Status will be NOT FOUND\n");
         }
         checkValidation(film);
         films.put(film.getId(), film);
@@ -56,10 +57,14 @@ public class FilmController {
             throw new ArgumentNotValidException("Слишком длинное описание");
         }
 
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895,12,28))) {
+        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.warn("Дата релиза фильма недействительна");
             throw new ArgumentNotValidException("Дата релиза недействительна");
         }
+    }
+
+    private int incrementFilmId() {
+        return ++filmId;
     }
 
 }

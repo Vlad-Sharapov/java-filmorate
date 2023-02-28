@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,10 +23,14 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private User user;
+    @BeforeEach
+    void beforeEach() {
+        user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
+                .birthday(LocalDate.of(1997,9,28)).build();
+    }
     @Test
     void users() throws Exception {
-        User user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
@@ -37,8 +42,6 @@ class UserControllerTest {
 
     @Test
     void create() throws Exception {
-        User user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk())
@@ -47,9 +50,8 @@ class UserControllerTest {
     }
 
     @Test
-    void createWithEmptyEmailResultBadRequest() throws Exception {
-        User user = User.builder().name("Vlad").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldBadRequestWhenCreateUserWithEmptyEmail() throws Exception {
+        user.setEmail(null);
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
@@ -60,18 +62,16 @@ class UserControllerTest {
     }
 
     @Test
-    void createWithIncorrectEmailResultBadRequest() throws Exception {
-        User user = User.builder().email("asdfgmail.com").name("Vlad").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldBadRequestWhenCreateUserWithIncorrectEmail() throws Exception {
+        user.setEmail("asdfgmail.com@");
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void createWithEmptyLoginResultBadRequest() throws Exception {
-        User user = User.builder().name("Vlad")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldBadRequestWhenCreateUserWithEmptyLogin() throws Exception {
+        user.setLogin(null);
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
@@ -81,18 +81,16 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest());
     }
     @Test
-    void createWithLoginWithSpacesResultBadRequest() throws Exception {
-        User user = User.builder().name("Vlad").login("vl sh").email("vldslv@gmail.com")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldBadRequestWhenCreateUserWithLoginWithSpaces() throws Exception {
+        user.setLogin("vl sh");
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void createWithEmptyNameResultIsOk() throws Exception {
-        User user = User.builder().email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldOkWhenCreateUserWithEmptyName() throws Exception {
+        user.setName(null);
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
@@ -104,9 +102,8 @@ class UserControllerTest {
     }
 
     @Test
-    void createWithIncorrectBirthdateResultBadRequest() throws Exception {
-        User user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.now()).build();
+    void shouldBadRequestWhenCreateUserWithIncorrectBirthdate() throws Exception {
+        user.setBirthday(LocalDate.now());
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
@@ -114,8 +111,6 @@ class UserControllerTest {
 
     @Test
     void update() throws Exception {
-        User user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
@@ -127,9 +122,7 @@ class UserControllerTest {
     }
 
     @Test
-    void updateUserWithIncorrectIdResultNotFound() throws Exception {
-        User user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
+    void shouldNotFoundWhenUpdateUserWithIncorrectId() throws Exception {
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());

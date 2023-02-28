@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -22,10 +23,21 @@ class FilmControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private Film film;
+
+    private final String LONG_DESCRIPTION = "78-летний профессор из Стокгольма вспоминает и пересматривает" +
+            " разочарования своей долгой жизни. Вместе с женой сына он едет на машине на вручение почетной" +
+            " докторской степени, посещая по пути места, где прошла его молодость, встречая разных людей и " +
+            "старых знакомых, вспоминая сны и былое.";
+
+    @BeforeEach
+    void beforeEach() {
+        film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмар Бергман")
+                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
+    }
+
     @Test
     void films() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмар Бергман")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk())
@@ -38,8 +50,6 @@ class FilmControllerTest {
 
     @Test
     void create() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмар Бергман")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk())
@@ -47,56 +57,44 @@ class FilmControllerTest {
                 .getResponse();
     }
     @Test
-    void createWithEmptyNameResultReturnBadRequest() throws Exception {
-        Film film = Film.builder().description("Один из лучших фильмов Игмара Бергмана")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
+    void shouldBadRequestWhenCreateFilmWithEmptyNameResult() throws Exception {
+       film.setName(null);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
     @Test
-    void createWithBirthdayFilmsDateResultReturnIsOk() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмара Бергмана")
-                .releaseDate(LocalDate.of(1895,12,28)).duration(90L).build();
+    void shouldOkWhenCreateWithBirthdayFilmsDateResult() throws Exception {
+        film.setReleaseDate(LocalDate.of(1895, 12, 28));
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
     }
     @Test
-    void createWithIncorrectFilmsDateResultReturnIsBadRequest() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмара Бергмана")
-                .releaseDate(LocalDate.of(1895,12,27)).duration(90L).build();
+    void shouldBadRequestWhenCreateFilmWithIncorrectFilmsDateResult() throws Exception {
+        film.setReleaseDate(LocalDate.of(1895, 12, 27));
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
     @Test
-    void createWithDescriptionFilm200SimbolsResultReturnIsBadRequest() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").
-                description("78-летний профессор из Стокгольма вспоминает и пересматривает разочарования своей долгой " +
-                        "жизни. Вместе с женой сына он едет на машине на вручение почетной докторской степени, " +
-                        "посещая по пути места, где прошла его молодость, встречая разных людей и старых знакомых, " +
-                        "вспоминая сны и былое.")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
+    void shouldBadRequestWhenCreateFilmWithDescriptionFilm200Simbols() throws Exception {
+        film.setDescription(LONG_DESCRIPTION);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
     @Test
-    void createWithNegativeDurationResultReturnIsBadRequest() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").
-                description("Один из лучших фильмов Игмара Бергмана")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(-90L).build();
+    void shouldBadRequestWhenCreateFilmWithNegativeDuration() throws Exception {
+        film.setDuration(-90L);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void createWithZeroDurationResultReturnIsBadRequest() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").
-                description("Один из лучших фильмов Игмара Бергмана")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(0L).build();
+    void shouldBadRequestWhenCreateWithZeroDuration() throws Exception {
+        film.setDuration(0L);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
@@ -104,22 +102,18 @@ class FilmControllerTest {
 
     @Test
     void update() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмар Бергман")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
         film.setName("Такси");
         film.setDescription("Фильм про таксиста и полицейского");
-        film.setId(1);
+        film.setId(3);
         this.mockMvc.perform(put("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
     }
     @Test
-    void updateFilmWithIncorrectIdResultNotFound() throws Exception {
-        Film film = Film.builder().name("Земляничная поляна").description("Один из лучших фильмов Игмар Бергман")
-                .releaseDate(LocalDate.of(1957, 12, 26)).duration(90L).build();
+    void shouldNotFoundWhenUpdateFilmWithIncorrectId() throws Exception {
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
