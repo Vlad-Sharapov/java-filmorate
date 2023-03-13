@@ -56,13 +56,15 @@ class FilmControllerTest {
                 .andReturn()
                 .getResponse();
     }
+
     @Test
     void shouldBadRequestWhenCreateFilmWithEmptyNameResult() throws Exception {
-       film.setName(null);
+        film.setName(null);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldOkWhenCreateWithBirthdayFilmsDateResult() throws Exception {
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
@@ -70,6 +72,7 @@ class FilmControllerTest {
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
     }
+
     @Test
     void shouldBadRequestWhenCreateFilmWithIncorrectFilmsDateResult() throws Exception {
         film.setReleaseDate(LocalDate.of(1895, 12, 27));
@@ -77,6 +80,7 @@ class FilmControllerTest {
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldBadRequestWhenCreateFilmWithDescriptionFilm200Simbols() throws Exception {
         film.setDescription(LONG_DESCRIPTION);
@@ -84,6 +88,7 @@ class FilmControllerTest {
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldBadRequestWhenCreateFilmWithNegativeDuration() throws Exception {
         film.setDuration(-90L);
@@ -107,11 +112,12 @@ class FilmControllerTest {
                 .andExpect(status().isOk());
         film.setName("Такси");
         film.setDescription("Фильм про таксиста и полицейского");
-        film.setId(3);
+        film.setId(3L);
         this.mockMvc.perform(put("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
     }
+
     @Test
     void shouldNotFoundWhenUpdateFilmWithIncorrectId() throws Exception {
         this.mockMvc.perform(post("/films")
@@ -119,7 +125,7 @@ class FilmControllerTest {
                 .andExpect(status().isOk());
         film.setName("Такси");
         film.setDescription("Фильм про таксиста и полицейского");
-        film.setId(1111111);
+        film.setId(1111111L);
         this.mockMvc.perform(put("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isNotFound());

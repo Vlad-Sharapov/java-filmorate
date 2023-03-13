@@ -1,70 +1,69 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
-import ru.yandex.practicum.filmorate.exception.ArgumentNotValidException;
+import ru.yandex.practicum.filmorate.controller.response.SuccessResponse;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Slf4j
 @RequestMapping("/users")
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private Integer userId = 0;
+    private final UserStorage userStorage;
+    private final UserService userService;
 
-    @GetMapping
+    @Autowired
+    public UserController(UserStorage userStorage, UserService userService) {
+        this.userStorage = userStorage;
+        this.userService = userService;
+    }
+
+    @GetMapping()
     public List<User> users() {
-        log.info("Количество пользователей: {}", users.values().size());
-        return new ArrayList<>(users.values());
+        return userStorage.users();
+    }
+
+    @GetMapping("/{id}")
+    public User users(@PathVariable Long id) {
+        return userStorage.findUser(id);
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        int id = incrementUserId();
-        checkValidation(user);
-        changeEmptyName(user);
-        user.setId(id);
-        users.put(user.getId(), user);
-        log.info("Добавлен пользователь: {}", user);
-        return user;
+        return userStorage.create(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public SuccessResponse addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.addFriend(id, friendId);
+        return new SuccessResponse(true);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public SuccessResponse removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        userService.removeFriend(id, friendId);
+        return new SuccessResponse(true);
+    }
+
+    @GetMapping("/{id}/friends")
+    public List<User> friends(@PathVariable Long id) {
+        return userService.friends(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public List<User> commonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+        return userService.commonFriends(id, otherId);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        User saveUser = users.get(user.getId());
-        if (saveUser == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
-        checkValidation(user);
-        users.put(user.getId(), user);
-        log.info("Фильм изменен с {} на {}", saveUser, user);
-        return user;
+        return userStorage.update(user);
     }
-
-    private void checkValidation(User saveUser) {
-        if (saveUser.getLogin().contains(" ")) {
-            log.warn("Некорректные данные (Аргумент параметра \"login\" имеет пробелы).");
-            throw new ArgumentNotValidException();
-        }
-    }
-
-    private void changeEmptyName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-    }
-
-    private int incrementUserId() {
-        return ++userId;
-    }
-
 }
