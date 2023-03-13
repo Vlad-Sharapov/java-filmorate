@@ -24,11 +24,13 @@ class UserControllerTest {
     private MockMvc mockMvc;
 
     private User user;
+
     @BeforeEach
     void beforeEach() {
         user = User.builder().name("Vlad").email("vldslv@gmail.com").login("spring")
-                .birthday(LocalDate.of(1997,9,28)).build();
+                .birthday(LocalDate.of(1997, 9, 28)).build();
     }
+
     @Test
     void users() throws Exception {
         this.mockMvc.perform(post("/users")
@@ -80,6 +82,7 @@ class UserControllerTest {
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void shouldBadRequestWhenCreateUserWithLoginWithSpaces() throws Exception {
         user.setLogin("vl sh");
@@ -96,7 +99,7 @@ class UserControllerTest {
                 .andExpect(status().isOk());
         user.setName(user.getLogin());
         this.mockMvc.perform(get("/users")
-                        .content(asJsonString(user)).contentType("application/json").accept("*/*"))
+                .accept("*/*"))
                 .andExpect(status().isOk())
                 .andExpect(result -> asJsonString(user));
     }
@@ -115,7 +118,7 @@ class UserControllerTest {
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
         user.setName("Misha");
-        user.setId(1);
+        user.setId(1L);
         this.mockMvc.perform(put("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
@@ -126,7 +129,7 @@ class UserControllerTest {
         this.mockMvc.perform(post("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
-        user.setId(1111111);
+        user.setId(1111111L);
         this.mockMvc.perform(put("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isNotFound());
