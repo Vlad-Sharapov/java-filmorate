@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserStorage {
-     List<User> users();
+    List<User> users();
 
-     User create(User user);
+    User create(User user);
 
-     User update(User user);
+    User update(User user);
 
-    Map<Long, User> getUsers();
+    Map<Long, User> getMapUsers();
 
     User findUser(Long id);
 

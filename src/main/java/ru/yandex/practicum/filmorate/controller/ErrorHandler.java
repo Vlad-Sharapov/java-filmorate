@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.controller.response.ErrorResponse;
-import ru.yandex.practicum.filmorate.exception.ArgumentNotValidException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 
@@ -25,7 +25,7 @@ public class ErrorHandler {
         return new ErrorResponse(false, e.getMessage());
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ArgumentNotValidException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleArgumentNotValidException(final Exception e) {
         return new ErrorResponse(false, e.getMessage());

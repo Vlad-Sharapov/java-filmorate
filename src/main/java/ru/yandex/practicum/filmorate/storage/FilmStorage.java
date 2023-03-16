@@ -13,7 +13,7 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    Map<Long, Film> getFilms();
+    Map<Long, Film> getMapFilms();
 
     Film findFilm(Long id);
 }
