@@ -4,7 +4,7 @@ Template repository for Filmorate project.
 ## 1. База данных приложения
 Схема базы данных приведена на рисунке 1.1
 
-![filmorate_db](/Users/vsh/Documents/Java/java-filmorate/src/main/resources/filmorate_db.png)
+![filmorate_db](/Users/vsh/Documents/Java/java-filmorate/src/main/resources/db/filmorate.png)
 Рис. 1.1 - Схема базы данных
 
 ### 1.1 Пример запросов к БД
@@ -16,28 +16,23 @@ FROM films
 WHERE name = {name}
 
 -- Фильм с id = {filmId}
-SELECT f.name,
-f.description,
-f.release_date,
-f.duration,
-g.name,
-c.name
+SELECT *
 FROM films f
-JOIN genre g ON f.genre_id = g.id
-JOIN category c ON f.category_id = c.id
 WHERE f.id = {filmId}
 
 -- Все фильмы
-SELECT f.name,
-f.description,
-f.release_date,
-f.duration,
-g.name,
-c.name
-FROM films f
-JOIN genre g ON f.genre_id = g.id
-JOIN category c ON f.category_id = c.id
+SELECT *
+FROM films
 
+-- Получение жанров фильма с id = {filmId}
+SELECT genre_id, g.name FROM film_genres fg
+JOIN genre g ON g.id = fg.genre_id
+WHERE film_id = {filmId}
+
+-- Получение рейтинга фильма по id = {filmId}
+SELECT *
+FROM mpa
+WHERE film_id - {filmId}
 -- Количество лайков у фильма с id = {filmId}
 SELECT COUNT(user_id)
 FROM enjoy l
