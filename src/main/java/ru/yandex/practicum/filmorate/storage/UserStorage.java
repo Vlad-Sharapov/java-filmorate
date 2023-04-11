@@ -15,13 +15,13 @@ public interface UserStorage {
 
     List<User> getFriends(Long id);
 
-    void addFriend(Long user_id1, Long user_id2);
+    void addFriend(Long userId1, Long userId2);
 
-    boolean checkFriendExist(Long user_id1, Long user_id2);
+    boolean checkFriendExist(Long userId1, Long userId2);
 
-    void deleteFriend(Long user_id1, Long user_id2);
+    void deleteFriend(Long userId1, Long userId2);
 
-    boolean setStatus(Long user_id1, Long user_id2, boolean status);
+    boolean setStatus(Long userId1, Long userId2, boolean status);
 
     User findUserById(Long id);
 
