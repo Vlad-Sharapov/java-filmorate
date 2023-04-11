@@ -40,4 +40,12 @@ public class ErrorHandler {
     public ErrorResponse handleDateTimeParseException(final HttpMessageNotReadableException e) {
         return new ErrorResponse(false, e.getMessage());
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleThrowable(final Throwable e) {
+        e.printStackTrace();
+        return new ErrorResponse(false, "Произошла непредвиденная ошибка."
+        );
+    }
 }

@@ -75,6 +75,7 @@ public class FilmController {
     public Genre genre(@PathVariable Integer id) {
         return filmStorage.getGenre(id);
     }
+
     @GetMapping("/mpa")
     public List<Mpa> mpas() {
         return filmStorage.getAllMpa();
