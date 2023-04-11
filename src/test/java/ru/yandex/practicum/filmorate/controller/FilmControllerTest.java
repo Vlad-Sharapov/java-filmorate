@@ -30,7 +30,7 @@ class FilmControllerTest {
 
     private Film film;
 
-    private final String LONG_DESCRIPTION = "78-летний профессор из Стокгольма вспоминает и пересматривает" +
+    private final String longDescription = "78-летний профессор из Стокгольма вспоминает и пересматривает" +
             " разочарования своей долгой жизни. Вместе с женой сына он едет на машине на вручение почетной" +
             " докторской степени, посещая по пути места, где прошла его молодость, встречая разных людей и " +
             "старых знакомых, вспоминая сны и былое.";
@@ -98,7 +98,7 @@ class FilmControllerTest {
 
     @Test
     void shouldBadRequestWhenCreateFilmWithDescriptionFilm200Simbols() throws Exception {
-        film.setDescription(LONG_DESCRIPTION);
+        film.setDescription(longDescription);
         this.mockMvc.perform(post("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isBadRequest());
