@@ -23,7 +23,6 @@ public interface UserStorage {
 
     boolean setStatus(Long user_id1, Long user_id2, boolean status);
 
-
     User findUserById(Long id);
 
     List<User> getCommonFriends(Long id1, Long id2);

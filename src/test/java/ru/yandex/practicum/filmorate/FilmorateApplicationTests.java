@@ -79,7 +79,6 @@ class FilmorateApplicationTests {
         assertEquals(user1.getName(), users.get(1).getName());
     }
 
-
     @Test
     @Order(4)
     void shouldUpdatedUserWhetUseUpdate() {
@@ -155,7 +154,6 @@ class FilmorateApplicationTests {
         assertTrue(flag);
     }
 
-
     @Test
     @Order(11)
     void shouldReturnTrueWhenUseMethodSetStatus() {
@@ -173,7 +171,6 @@ class FilmorateApplicationTests {
         Film film = filmStorage.findFilm(1L);
         assertThat(film).hasFieldOrPropertyWithValue("id", 1L);
     }
-
 
     @Test
     @Order(13)
@@ -200,7 +197,6 @@ class FilmorateApplicationTests {
         assertThat(updateTest).hasFieldOrPropertyWithValue("name", "Update test");
     }
 
-
     @Test
     @Order(18)
     void shouldFilm1RateEqual1WhenUseMethodAddLike() {
@@ -221,7 +217,6 @@ class FilmorateApplicationTests {
         Integer film1rate = filmStorage.numOfLikes(film1.getId());
         assertEquals(1, film1rate);
     }
-
 
     @Test
     @Order(20)

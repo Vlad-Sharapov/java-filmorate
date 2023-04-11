@@ -19,9 +19,11 @@ public interface FilmStorage {
     Film findFilm(Long id);
 
     Mpa getMpa(Integer id);
+
     List<Mpa> getAllMpa();
 
     Genre getGenre(Integer id);
+
     List<Genre> getAllGenre();
 
     void addLike(Long userId, Long filmId);

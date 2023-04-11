@@ -237,7 +237,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id");
-            String name = rs.getString("name");
+        String name = rs.getString("name");
         String description = rs.getString("description");
         LocalDate releaseDate = rs.getDate("release_date").toLocalDate();
         Long duration = rs.getLong("duration");
