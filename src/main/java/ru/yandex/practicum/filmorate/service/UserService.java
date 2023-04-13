@@ -24,13 +24,14 @@ public class UserService {
             throw new ValidationException("Пользователь не может добавить себя в друзья.");
         }
         if (userStorage.checkFriendExist(id1, id2)) {
+            log.info(String.format("У пользователя c id %s уже есть друг c id %s.", id1, id2));
             return;
         }
         userStorage.addFriend(id1, id2);
         if (userStorage.checkFriendExist(id2, id1)) {
             userStorage.setStatus(id2, id1, true);
             userStorage.setStatus(id1, id2, true);
-            log.info(String.format("Пользователи c id %s и %s теперь друзья", id1, id2));
+            log.info(String.format("Пользователи c id %s и %s теперь друзья.", id1, id2));
         }
     }
 

@@ -28,17 +28,17 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> users() {
-        String sqlQuery = "SELECT * FROM \"users\"";
+        String sqlQuery = "SELECT * FROM users";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs));
     }
 
     @Override
     public User create(User user) {
-        String sqlQuery = "INSERT INTO \"users\" (\"email\", \"login\", \"name\", \"birthday\") " +
+        String sqlQuery = "INSERT INTO users (email, login, name, birthday) " +
                 "VALUES (?,?,?,?)";
         if (checkUserExist(user.getEmail()))
             throw new ValidationException("Пользователь с такой почтой уже существует");
-        checkValidation(user);
+        entityValidation(user);
         changeEmptyName(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -58,13 +58,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public User update(User user) {
-        String sqlQuery = "UPDATE \"users\" SET \"email\"=?, \"login\"=?, \"name\"=?, \"birthday\"=? WHERE \"id\" = ?";
+        String sqlQuery = "UPDATE users SET email=?, login=?, name=?, birthday=? WHERE id = ?";
 
         if (!checkUserExist(user.getId())) {
             log.warn("Пользователь с id - {} не найден", user.getEmail());
             throw new UserNotFoundException(String.format("Пользователь %s не найден", user.getEmail()));
         }
-        checkValidation(user);
+        entityValidation(user);
         changeEmptyName(user);
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -85,13 +85,13 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void delete(Long id) {
-        String sqlQuery = "DELETE \"users\" WHERE \"id\" = ?";
+        String sqlQuery = "DELETE users WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
     public User findUserById(Long id) {
-        String sqlQuery = "SELECT * FROM \"users\" WHERE \"id\" = ?";
+        String sqlQuery = "SELECT * FROM users WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
         } catch (EmptyResultDataAccessException e) {
@@ -101,27 +101,27 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long id) {
-        String sqlQuery = "SELECT * fROM \"users\" WHERE \"id\" IN(SELECT \"user_id2\" " +
-                "FROM \"friends\" " +
-                "WHERE \"user_id1\" = ?)";
+        String sqlQuery = "SELECT * fROM users WHERE id IN(SELECT user_id2 " +
+                "FROM friends " +
+                "WHERE user_id1 = ?)";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs), id);
     }
 
     @Override
     public void addFriend(Long userId1, Long userId2) {
-        String sqlQuery = "INSERT INTO \"friends\" (\"user_id1\", \"user_id2\") VALUES (?,?)";
+        String sqlQuery = "INSERT INTO friends (user_id1, user_id2) VALUES (?,?)";
         jdbcTemplate.update(sqlQuery, userId1, userId2);
     }
 
     @Override
     public void deleteFriend(Long userId1, Long userId2) {
-        String sqlQuery = "DELETE \"friends\" WHERE \"user_id1\" = ? AND \"user_id2\" = ?";
+        String sqlQuery = "DELETE friends WHERE user_id1 = ? AND user_id2 = ?";
         jdbcTemplate.update(sqlQuery, userId1, userId2);
     }
 
     @Override
     public boolean checkFriendExist(Long userId1, Long userId2) {
-        String sqlQuery = "SELECT * FROM \"friends\" WHERE \"user_id1\" = ? AND \"user_id2\" = ?";
+        String sqlQuery = "SELECT * FROM friends WHERE user_id1 = ? AND user_id2 = ?";
         try {
             jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFriends(rs), userId1, userId2);
             return true;
@@ -132,25 +132,24 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getCommonFriends(Long id1, Long id2) {
-        String sqlQuery = "SELECT * FROM \"users\" WHERE \"id\" IN(SELECT f1.\"user_id2\" " +
-                "FROM \"friends\" f1 " +
-                "WHERE f1.\"user_id1\" = ?" +
-                "AND f1.\"user_id2\" = (SELECT f2.\"user_id2\" " +
-                "FROM \"friends\" f2 " +
-                "WHERE f2.\"user_id1\" = ? " +
+        String sqlQuery = "SELECT * FROM users WHERE id IN(SELECT f1.user_id2 " +
+                "FROM friends f1 " +
+                "WHERE f1.user_id1 = ?" +
+                "AND f1.user_id2 = (SELECT f2.user_id2 " +
+                "FROM friends f2 " +
+                "WHERE f2.user_id1 = ? " +
                 "))";
         return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeUser(rs), id1, id2);
     }
 
     @Override
     public boolean setStatus(Long userId1, Long userId2, boolean status) {
-        String sqlQuery = "UPDATE \"friends\" SET \"status\" = ? WHERE \"user_id1\" = ? AND \"user_id2\" = ?";
+        String sqlQuery = "UPDATE friends SET status = ? WHERE user_id1 = ? AND user_id2 = ?";
         jdbcTemplate.update(sqlQuery, status, userId1, userId2);
         return true;
     }
 
-
-    private void checkValidation(User saveUser) {
+    private void entityValidation(User saveUser) {
         if (saveUser.getLogin().contains(" ")) {
             log.warn("Некорректные данные (Аргумент параметра \"login\" имеет пробелы).");
             throw new ValidationException();
@@ -164,7 +163,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     private boolean checkUserExist(String email) {
-        String sql = "SELECT * FROM \"users\" WHERE \"email\" = ?";
+        String sql = "SELECT * FROM users WHERE email = ?";
         try {
             jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), email);
             return true;

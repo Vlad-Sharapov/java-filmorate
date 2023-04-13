@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
@@ -16,7 +14,6 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping()
 @Slf4j
 @RequiredArgsConstructor
 public class FilmController {
@@ -60,29 +57,8 @@ public class FilmController {
     public List<Film> popular(@RequestParam(defaultValue = "10", required = false) int count) {
         return filmService.getTopFilms(count);
     }
-
     @DeleteMapping("/films/{id}")
     public void delete(@PathVariable Long id) {
         filmStorage.delete(id);
-    }
-
-    @GetMapping("/genres")
-    public List<Genre> genres() {
-        return filmStorage.getAllGenre();
-    }
-
-    @GetMapping("/genres/{id}")
-    public Genre genre(@PathVariable Integer id) {
-        return filmStorage.getGenre(id);
-    }
-
-    @GetMapping("/mpa")
-    public List<Mpa> mpas() {
-        return filmStorage.getAllMpa();
-    }
-
-    @GetMapping("/mpa/{id}")
-    public Mpa mpa(@PathVariable Integer id) {
-        return filmStorage.getMpa(id);
     }
 }
