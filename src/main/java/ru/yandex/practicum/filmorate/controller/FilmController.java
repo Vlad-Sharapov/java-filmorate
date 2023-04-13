@@ -57,6 +57,7 @@ public class FilmController {
     public List<Film> popular(@RequestParam(defaultValue = "10", required = false) int count) {
         return filmService.getTopFilms(count);
     }
+
     @DeleteMapping("/films/{id}")
     public void delete(@PathVariable Long id) {
         filmStorage.delete(id);
