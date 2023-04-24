@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-public class LocalDateAdapter extends TypeAdapter<LocalDate> {
+public class  LocalDateAdapter extends TypeAdapter<LocalDate> {
     private static final DateTimeFormatter formatterWriter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter formatterReader = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
