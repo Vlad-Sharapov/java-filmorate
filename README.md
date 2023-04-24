@@ -7,7 +7,7 @@ Template repository for Filmorate project.
 Схема базы данных приведена на рисунке 1.1.
 
 
-![filmorate_db](/Users/vsh/Documents/Java/java-filmorate/src/main/resources/filmorate_db.png)
+![filmorate_db](src/main/resources/filmorate_db.png)
 Рис. 1.1 - Схема базы данных
 
 ### 1.1 Пример запросов к БД
