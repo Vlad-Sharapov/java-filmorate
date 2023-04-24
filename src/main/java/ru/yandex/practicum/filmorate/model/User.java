@@ -7,11 +7,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class User {
     private Long id;
     @NotNull
@@ -24,15 +23,5 @@ public class User {
     @Past
     private LocalDate birthday;
     private String name;
-    private final Set<Long> friends = new HashSet<>();
-
-
-    public void addFriend(Long userId) {
-        friends.add(userId);
-    }
-
-    public void removeFriend(Long userId) {
-        friends.remove(userId);
-    }
 }
 

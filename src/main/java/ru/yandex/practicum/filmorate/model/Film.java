@@ -7,11 +7,10 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class Film {
     private Long id;
     @NotNull
@@ -21,13 +20,10 @@ public class Film {
     private LocalDate releaseDate;
     @PositiveOrZero
     private Long duration;
-    private final Set<Long> usersLikeIt = new HashSet<>();
 
-    public void addUserLike(Long userId) {
-        usersLikeIt.add(userId);
-    }
+    private Mpa mpa;
 
-    public void removeUserLike(Long userId) {
-        usersLikeIt.remove(userId);
-    }
+    private List<Genre> genres;
+    private Integer rate;
 }
+

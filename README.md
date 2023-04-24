@@ -2,9 +2,12 @@
 Template repository for Filmorate project.
 
 ## 1. База данных приложения
-Схема базы данных приведена на рисунке 1.1
+Промежуточная была проверена студентом Александром Смсоновым. Коментарии были в pull-request.
 
-![filmorate_db](/Users/vsh/Documents/Java/java-filmorate/src/main/resources/db/filmorate.png)
+Схема базы данных приведена на рисунке 1.1.
+
+
+![filmorate_db](/Users/vsh/Documents/Java/java-filmorate/src/main/resources/filmorate_db.png)
 Рис. 1.1 - Схема базы данных
 
 ### 1.1 Пример запросов к БД
@@ -32,7 +35,7 @@ WHERE film_id = {filmId}
 -- Получение рейтинга фильма по id = {filmId}
 SELECT *
 FROM mpa
-WHERE film_id - {filmId}
+WHERE film_id = {filmId}
 -- Количество лайков у фильма с id = {filmId}
 SELECT COUNT(user_id)
 FROM enjoy l

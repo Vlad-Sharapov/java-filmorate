@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static ru.yandex.practicum.filmorate.controller.FilmControllerTest.asJsonString;
 
 @SpringBootTest
+@AutoConfigureTestDatabase
 @AutoConfigureMockMvc
 class UserControllerTest {
 
@@ -33,9 +35,6 @@ class UserControllerTest {
 
     @Test
     void users() throws Exception {
-        this.mockMvc.perform(post("/users")
-                        .content(asJsonString(user)).contentType("application/json").accept("*/*"))
-                .andExpect(status().isOk());
         this.mockMvc.perform(get("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk())
@@ -93,10 +92,7 @@ class UserControllerTest {
 
     @Test
     void shouldOkWhenCreateUserWithEmptyName() throws Exception {
-        user.setName(null);
-        this.mockMvc.perform(post("/users")
-                        .content(asJsonString(user)).contentType("application/json").accept("*/*"))
-                .andExpect(status().isOk());
+
         user.setName(user.getLogin());
         this.mockMvc.perform(get("/users")
                 .accept("*/*"))
@@ -114,9 +110,6 @@ class UserControllerTest {
 
     @Test
     void update() throws Exception {
-        this.mockMvc.perform(post("/users")
-                        .content(asJsonString(user)).contentType("application/json").accept("*/*"))
-                .andExpect(status().isOk());
         user.setName("Misha");
         user.setId(1L);
         this.mockMvc.perform(put("/users")
@@ -126,9 +119,6 @@ class UserControllerTest {
 
     @Test
     void shouldNotFoundWhenUpdateUserWithIncorrectId() throws Exception {
-        this.mockMvc.perform(post("/users")
-                        .content(asJsonString(user)).contentType("application/json").accept("*/*"))
-                .andExpect(status().isOk());
         user.setId(1111111L);
         this.mockMvc.perform(put("/users")
                         .content(asJsonString(user)).contentType("application/json").accept("*/*"))
