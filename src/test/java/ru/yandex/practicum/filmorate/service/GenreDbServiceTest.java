@@ -1,6 +1,7 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.service;
 
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,22 +18,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @AutoConfigureTestDatabase
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class GenreDbStorageTest extends StorageTest {
+class GenreDbServiceTest extends ServiceTest {
 
     @Autowired
-    public GenreDbStorageTest(FilmStorage filmStorage, MpaStorage mpaStorage, GenreStorage genreStorage, UserStorage userStorage, JdbcTemplate jdbcTemplate) {
-        super(filmStorage, mpaStorage, genreStorage, userStorage, jdbcTemplate);
+    public GenreDbServiceTest(FilmService filmService, MpaService mpaService, GenreService genreService, UserService userService, JdbcTemplate jdbcTemplate) {
+        super(filmService, mpaService, genreService, userService, jdbcTemplate);
     }
 
     @Test
+    @Order(16)
     void shouldGenreNameWhenUseMethodGetGenre() {
-        Genre genre = genreStorage.getGenre(1);
+        Genre genre = genreService.getGenre(1);
         assertThat(genre).hasFieldOrPropertyWithValue("name", "Комедия");
     }
 
     @Test
+    @Order(17)
     void shouldAllGenresNameWhenUseMethodgetAllGenre() {
-        List<Genre> allGenre = genreStorage.getAllGenre();
+        List<Genre> allGenre = genreService.getAllGenre();
         assertEquals(6, allGenre.size());
     }
 }

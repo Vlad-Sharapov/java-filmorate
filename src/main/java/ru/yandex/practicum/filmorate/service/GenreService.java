@@ -1,11 +1,11 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.service;
 
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
-import java.util.Map;
 
-public interface GenreStorage {
+public interface GenreService {
+
 
     Genre getGenre(Integer id);
 
@@ -13,7 +13,4 @@ public interface GenreStorage {
 
     List<Genre> getFilmGenres(Long id);
 
-
-    Map<Long, List<Genre>> getFilmsGenres(List<Long> ids);
-
-    }
+}

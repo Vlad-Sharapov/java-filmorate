@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface FilmStorage {
 
-    List<Film> films();
+    List<Film> films(Integer from, Integer size);
 
-    Film create(Film film);
+    Long create(Film film);
 
     Film update(Film film);
 
@@ -24,5 +24,8 @@ public interface FilmStorage {
 
     List<Film> topFilms(Integer count);
 
+    void filmGenresUpdate(Film film);
 
-}
+    public Film findFilmByName(String name);
+
+    }

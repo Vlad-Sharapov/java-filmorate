@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,17 +19,16 @@ import java.util.List;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class StorageTest {
+public class ServiceTest {
 
-    protected final FilmStorage filmStorage;
-    protected final MpaStorage mpaStorage;
-    protected final GenreStorage genreStorage;
+    protected final FilmService filmService;
+    protected final MpaService mpaService;
+    protected final GenreService genreService;
     protected Film film;
 
-    protected final UserStorage userStorage;
+    protected final UserService userService;
     protected final JdbcTemplate jdbcTemplate;
     protected User user;
-
 
     @BeforeEach
     void beforeEach() {
@@ -51,6 +50,7 @@ public class StorageTest {
                 .login("spring")
                 .birthday(LocalDate.of(1997, 9, 28))
                 .build();
+
         cleanDb();
 
     }

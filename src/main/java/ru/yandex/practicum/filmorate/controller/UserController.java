@@ -2,11 +2,16 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -16,23 +21,22 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    @Qualifier("UserDbStorage")
-    private final UserStorage userStorage;
+
     private final UserService userService;
 
     @GetMapping()
     public List<User> users() {
-        return userStorage.users();
+        return userService.users();
     }
 
     @GetMapping("/{id}")
     public User users(@PathVariable Long id) {
-        return userStorage.findUserById(id);
+        return userService.findUserById(id);
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userStorage.create(user);
+        return userService.create(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -57,11 +61,11 @@ public class UserController {
 
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        return userStorage.update(user);
+        return userService.update(user);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        userStorage.delete(id);
+        userService.delete(id);
     }
 }

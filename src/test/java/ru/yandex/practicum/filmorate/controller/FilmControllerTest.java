@@ -1,18 +1,18 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import ru.yandex.practicum.filmorate.gsonadapter.LocalDateAdapter;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -21,12 +21,22 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @SpringBootTest
-@AutoConfigureTestDatabase
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @AutoConfigureMockMvc
 class FilmControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private Film film;
 
@@ -49,8 +59,16 @@ class FilmControllerTest {
                         .id(1)
                         .   build()))
                 .build();
+        cleanDb();
     }
 
+    private void cleanDb() {
+        jdbcTemplate.update("DELETE FROM enjoy");
+        jdbcTemplate.update("DELETE FROM friends");
+        jdbcTemplate.update("DELETE FROM film_genres");
+        jdbcTemplate.update("DELETE FROM films");
+        jdbcTemplate.update("DELETE FROM users");
+    }
     @Test
     void films() throws Exception {
 //        this.mockMvc.perform(post("/films")
@@ -122,12 +140,14 @@ class FilmControllerTest {
 
     @Test
     void update() throws Exception {
-//        this.mockMvc.perform(post("/films")
-//                        .content(asJsonString(film)).contentType("application/json").accept("*/*"))
-//                .andExpect(status().isOk());
+        MvcResult mvcResult = this.mockMvc.perform(post("/films")
+                        .content(asJsonString(film)).contentType("application/json").accept("*/*"))
+                .andExpect(status().isOk()).andReturn();
+        String body = mvcResult.getResponse().getContentAsString();
+        Long id = ((Number) JsonPath.read(body, "$.id")).longValue();
         film.setName("Такси");
         film.setDescription("Фильм про таксиста и полицейского");
-        film.setId(1L);
+        film.setId(id);
         this.mockMvc.perform(put("/films")
                         .content(asJsonString(film)).contentType("application/json").accept("*/*"))
                 .andExpect(status().isOk());
