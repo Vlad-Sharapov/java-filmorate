@@ -19,7 +19,7 @@ import java.util.List;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class StorageTest {
+public abstract class StorageTest {
 
     protected final FilmStorage filmStorage;
     protected final MpaStorage mpaStorage;

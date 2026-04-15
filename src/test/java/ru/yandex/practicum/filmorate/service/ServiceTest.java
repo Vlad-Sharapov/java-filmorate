@@ -19,7 +19,7 @@ import java.util.List;
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ServiceTest {
+public abstract class ServiceTest {
 
     protected final FilmService filmService;
     protected final MpaService mpaService;

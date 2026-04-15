@@ -18,15 +18,12 @@ public interface FilmService {
 
     Integer numOfLikes(Long filmId);
 
-    List<Film> topFilms(Integer count);
+    List<Film> getTopFilms(Integer from, Integer size);
 
     void addLike(Long filmId, Long userId);
 
 
     void removeLike(Long filmId, Long userId);
-
-
-    List<Film> getTopFilms(int count);
 
 
 

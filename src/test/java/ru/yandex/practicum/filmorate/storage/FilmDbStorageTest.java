@@ -20,6 +20,9 @@ class FilmDbStorageTest extends StorageTest {
     private final Integer FROM = 0;
 
     @Autowired
+    private LikeStorage likeStorage;
+
+    @Autowired
     public FilmDbStorageTest(FilmStorage filmStorage, MpaStorage mpaStorage, GenreStorage genreStorage, UserStorage userStorage, JdbcTemplate jdbcTemplate) {
         super(filmStorage, mpaStorage, genreStorage, userStorage, jdbcTemplate);
     }
@@ -54,7 +57,7 @@ class FilmDbStorageTest extends StorageTest {
         List<User> users = userStorage.users();
         Film film1 = films.get(0);
         User user1 = users.get(0);
-        filmStorage.addLike(user1.getId(), film1.getId());
+        likeStorage.addLike(user1.getId(), film1.getId());
         Film likedFilm = filmStorage.findFilm(film1.getId());
         assertThat(likedFilm).hasFieldOrPropertyWithValue("rate", 1);
     }
@@ -67,7 +70,7 @@ class FilmDbStorageTest extends StorageTest {
         List<User> users = userStorage.users();
         Film film1 = films.get(0);
         User user1 = users.get(0);
-        filmStorage.addLike(user1.getId(), film1.getId());
+        likeStorage.addLike(user1.getId(), film1.getId());
         Integer film1rate = filmStorage.numOfLikes(film1.getId());
         assertEquals(1, film1rate);
     }
@@ -85,9 +88,9 @@ class FilmDbStorageTest extends StorageTest {
         User user1 = users.get(0);
         User user2 = users.get(1);
         Film film2 = films.get(1);
-        filmStorage.addLike(user2.getId(), film1.getId());
-        filmStorage.addLike(user1.getId(), film2.getId());
-        List<Film> topFilms = filmStorage.topFilms(10);
+        likeStorage.addLike(user2.getId(), film1.getId());
+        likeStorage.addLike(user1.getId(), film2.getId());
+        List<Film> topFilms = filmStorage.topFilms(0, 10);
         assertEquals(film1.getId(), topFilms.get(0).getId());
         assertEquals(film2.getId(), topFilms.get(1).getId());
     }
@@ -103,9 +106,9 @@ class FilmDbStorageTest extends StorageTest {
         Film film1 = films.get(0);
         User user1 = users.get(0);
         User user2 = users.get(1);
-        filmStorage.addLike(user2.getId(), film1.getId());
-        filmStorage.addLike(user1.getId(), film1.getId());
-        filmStorage.removeLike(user1.getId(), film1.getId());
+        likeStorage.addLike(user2.getId(), film1.getId());
+        likeStorage.addLike(user1.getId(), film1.getId());
+        likeStorage.removeLike(user1.getId(), film1.getId());
         Film likedFilm = filmStorage.findFilm(film1.getId());
         assertThat(likedFilm).hasFieldOrPropertyWithValue("rate", 1);
     }

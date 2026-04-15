@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -11,6 +12,8 @@ import ru.yandex.practicum.filmorate.controller.response.ErrorResponse;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
+
+import java.util.Objects;
 
 
 @RestControllerAdvice
@@ -29,10 +32,20 @@ public class ErrorHandler {
         return new ErrorResponse(false, e.getMessage());
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleArgumentNotValidException(final Exception e) {
+    public ErrorResponse handleArgumentNotValidException(final ValidationException e) {
         return new ErrorResponse(false, e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleArgumentNotValidException(final MethodArgumentNotValidException e) {
+        String message = e.getFieldErrors().stream()
+                .map(FieldError::getDefaultMessage)
+                .findFirst()
+                .orElse("Ошибка валидации");
+        return new ErrorResponse(false, message);
     }
 
     @ExceptionHandler
@@ -45,7 +58,7 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
         e.printStackTrace();
-        return new ErrorResponse(false, "Произошла непредвиденная ошибка."
+        return new ErrorResponse(false, "Произошла непредвиденная ошибка.\n" + e.getMessage()
         );
     }
 }

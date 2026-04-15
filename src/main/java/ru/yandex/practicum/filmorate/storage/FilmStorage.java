@@ -16,13 +16,11 @@ public interface FilmStorage {
 
     Film findFilm(Long id);
 
-    void addLike(Long userId, Long filmId);
-
-    void removeLike(Long userId, Long filmId);
+    List<Film> getFilmsByIds(List<Long> id, Integer from, Integer size);
 
     Integer numOfLikes(Long filmId);
 
-    List<Film> topFilms(Integer count);
+    List<Film> topFilms(Integer from, Integer size);
 
     void filmGenresUpdate(Film film);
 

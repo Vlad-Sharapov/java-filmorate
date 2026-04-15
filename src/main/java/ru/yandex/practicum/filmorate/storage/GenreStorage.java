@@ -13,7 +13,6 @@ public interface GenreStorage {
 
     List<Genre> getFilmGenres(Long id);
 
-
     Map<Long, List<Genre>> getFilmsGenres(List<Long> ids);
 
     }

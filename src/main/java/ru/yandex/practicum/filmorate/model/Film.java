@@ -18,7 +18,7 @@ public class Film {
     private String name;
     private String description;
     private LocalDate releaseDate;
-    @PositiveOrZero
+    @PositiveOrZero(message = "Продолжительность фильма должно быть больше либо равно 0")
     private Long duration;
 
     private Mpa mpa;

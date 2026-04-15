@@ -18,8 +18,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Repository("FilmDbStorage")
 @Slf4j
@@ -110,7 +112,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN enjoy e ON f.id = e.film_id " +
                 "LEFT JOIN mpa M on f.MPA_ID = M.id " +
                 "WHERE f.id = ? " +
-                "GROUP BY e.film_id;";
+                "GROUP BY f.id;";
         try {
             Film film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
             log.info("Количество фильмов: {}", film);
@@ -118,6 +120,38 @@ public class FilmDbStorage implements FilmStorage {
         } catch (EmptyResultDataAccessException e) {
             throw new FilmNotFoundException(String.format("Фильм с id - %s не найден", id));
         }
+    }
+
+    @Override
+    public List<Film> getFilmsByIds(List<Long> ids,  Integer from, Integer size) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        Integer offset = from * size;
+
+        String placeholders = ids.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = "SELECT f.id, f.name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.MPA_ID, " +
+                "M.NAME mpa_name, " +
+                "COUNT(e.user_id) rate " +
+                "FROM films f " +
+                "LEFT JOIN enjoy e ON f.id = e.film_id " +
+                "LEFT JOIN mpa M on f.MPA_ID = M.id " +
+                "WHERE f.id in (" + placeholders + ") " +
+                "GROUP BY f.id " +
+                "LIMIT ? OFFSET ?";
+
+        List<Object> params = new ArrayList<>(ids);
+        params.add(size);
+        params.add(offset);
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), params.toArray());
     }
 
     @Override
@@ -143,18 +177,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(Long userId, Long filmId) {
-        String sqlQuery = "INSERT INTO enjoy (user_id, film_id) VALUES (?,?)";
-        jdbcTemplate.update(sqlQuery, userId, filmId);
-    }
-
-    @Override
-    public void removeLike(Long userId, Long filmId) {
-        String sqlQuery = "DELETE enjoy WHERE user_id = ? AND film_id = ?";
-        jdbcTemplate.update(sqlQuery, userId, filmId);
-    }
-
-    @Override
     public Integer numOfLikes(Long filmId) {
         String sqlQuery = "SELECT COUNT(user_id) num_of_likes FROM enjoy WHERE film_id = ? GROUP BY film_id";
         SqlRowSet numOfLikesRow = jdbcTemplate.queryForRowSet(sqlQuery, filmId);
@@ -165,7 +187,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> topFilms(Integer count) {
+    public List<Film> topFilms(Integer from, Integer size) {
         String sqlQuery = "SELECT f.id, f.name, " +
                 "f.description, " +
                 "f.release_date, " +
@@ -176,10 +198,11 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films f " +
                 "LEFT JOIN enjoy e ON f.id = e.film_id " +
                 "LEFT JOIN mpa M on f.MPA_ID = M.id " +
-                "GROUP BY e.film_id " +
-                "ORDER BY COUNT(e.user_id) DESC " +
-                "LIMIT ?";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), count);
+                "GROUP BY f.id " +
+                "ORDER BY rate DESC " +
+                "LIMIT ? " +
+                "OFFSET ? ";
+        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), size, from);
     }
 
     @Override

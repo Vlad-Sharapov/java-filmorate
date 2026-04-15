@@ -12,10 +12,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.MpaStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
@@ -30,6 +27,9 @@ public class FilmServiceImpl implements FilmService {
 
     @Qualifier("FilmDbStorage")
     private final FilmStorage filmStorage;
+
+    private final LikeStorage likeStorage;
+
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
@@ -40,14 +40,7 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> getAllFilms(Integer from, Integer size) {
         List<Film> films = filmStorage.films(from, size);
-        List<Long> filmsIds = films.stream()
-                .map(Film::getId)
-                .collect(Collectors.toList());
-        Map<Long, List<Genre>> filmsGenres=genreStorage.getFilmsGenres(filmsIds);
-        return films.stream().map(film -> film.toBuilder()
-                .genres(filmsGenres.get(film.getId()))
-                .build())
-                .collect(Collectors.toList());
+        return addGenresToFilms(films);
 
     }
 
@@ -95,7 +88,11 @@ public class FilmServiceImpl implements FilmService {
 
     @Override
     public Film findFilm(Long id) {
-        return filmStorage.findFilm(id);
+        List<Genre> filmGenres = genreStorage.getFilmGenres(id);
+        Film film = filmStorage.findFilm(id);
+        return film.toBuilder()
+                .genres(filmGenres)
+                .build();
     }
 
     @Override
@@ -104,15 +101,16 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> topFilms(Integer count) {
-        return filmStorage.topFilms(count);
+    public List<Film> getTopFilms(Integer from,  Integer size) {
+        List<Film> films = filmStorage.topFilms(from, size);
+        return addGenresToFilms(films);
     }
 
     @Override
     public void addLike(Long filmId, Long userId) {
         Film film = filmStorage.findFilm(filmId);
         User user = userStorage.findUserById(userId);
-        filmStorage.addLike(user.getId(), film.getId());
+        likeStorage.addLike(user.getId(), film.getId());
         log.info(String.format("Количество лайков для фильма %s: %s", film.getName(), filmStorage.numOfLikes(filmId)));
     }
 
@@ -120,13 +118,8 @@ public class FilmServiceImpl implements FilmService {
     public void removeLike(Long filmId, Long userId) {
         Film film = filmStorage.findFilm(filmId);
         User user = userStorage.findUserById(userId);
-        userStorage.deleteFriend(user.getId(), film.getId());
+        likeStorage.removeLike(user.getId(), film.getId());
         log.info(String.format("Количество лайков для фильма %s: %s", film.getName(), filmStorage.numOfLikes(filmId)));
-    }
-
-    @Override
-    public List<Film> getTopFilms(int count) {
-        return filmStorage.topFilms(count);
     }
 
     private void checkValidation(Film film) {
@@ -140,9 +133,9 @@ public class FilmServiceImpl implements FilmService {
             throw new ValidationException("Дата релиза фильма недействительна");
         }
 
-        if (filmStorage.findFilmByName(film.getName()) != null) {
-            throw new ValidationException("Фильм с этим названием уже существует");
-        }
+//        if (filmStorage.findFilmByName(film.getName()) != null) {
+//            throw new ValidationException("Фильм с этим названием уже существует");
+//        }
     }
 
     private boolean checkFilmExist(Long id) {
@@ -152,5 +145,16 @@ public class FilmServiceImpl implements FilmService {
         } catch (FilmNotFoundException e) {
             return false;
         }
+    }
+
+    private List<Film> addGenresToFilms(List<Film> films) {
+        List<Long> filmsIds = films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+        Map<Long, List<Genre>> filmsGenres=genreStorage.getFilmsGenres(filmsIds);
+        return films.stream().map(film -> film.toBuilder()
+                        .genres(filmsGenres.getOrDefault(film.getId(), List.of()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }

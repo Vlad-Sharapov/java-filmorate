@@ -97,11 +97,12 @@ class FilmDbServiceTest extends ServiceTest {
         User user1 = users.get(0);
         User user2 = users.get(1);
         Film film2 = films.get(1);
-        filmService.addLike(user2.getId(), film1.getId());
-        filmService.addLike(user1.getId(), film2.getId());
-        List<Film> topFilms = filmService.topFilms(10);
-        assertEquals(film1.getId(), topFilms.get(0).getId());
-        assertEquals(film2.getId(), topFilms.get(1).getId());
+        filmService.addLike(film1.getId(), user2.getId());
+        filmService.addLike(film2.getId(), user2.getId());
+        filmService.addLike(film2.getId(), user1.getId());
+        List<Film> topFilms = filmService.getTopFilms(0, 10);
+        assertEquals(film2.getId(), topFilms.get(0).getId());
+        assertEquals(film1.getId(), topFilms.get(1).getId());
     }
 
     @Test
