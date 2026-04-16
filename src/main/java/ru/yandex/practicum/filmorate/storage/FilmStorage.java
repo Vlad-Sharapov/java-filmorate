@@ -24,6 +24,10 @@ public interface FilmStorage {
 
     void filmGenresUpdate(Film film);
 
-    public Film findFilmByName(String name);
+    void filmDirectorsUpdate(Film film);
+
+    Film findFilmByName(String name);
+
+    List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
     }

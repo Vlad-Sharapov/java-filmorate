@@ -35,9 +35,9 @@ public class LikeStorageImpl implements LikeStorage {
         return jdbcTemplate.query(sqlQuery, rs -> {
             Map<Long, List<Long>> result = new HashMap<>();
             while (rs.next()) {
-                List<Long> userLikedFils = result.getOrDefault(rs.getLong("user_id"), new ArrayList<>());
-                userLikedFils.add(rs.getLong("film_id"));
-                result.put(rs.getLong("user_id"), userLikedFils);
+                List<Long> userLikedFilms = result.getOrDefault(rs.getLong("user_id"), new ArrayList<>());
+                userLikedFilms.add(rs.getLong("film_id"));
+                result.put(rs.getLong("user_id"), userLikedFilms);
             }
             return result;
         });

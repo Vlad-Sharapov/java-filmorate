@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,5 +26,9 @@ public class Film {
 
     private List<Genre> genres;
     private Integer rate;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Director> directors;
+
 }
 

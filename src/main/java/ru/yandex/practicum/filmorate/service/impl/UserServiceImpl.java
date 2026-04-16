@@ -8,9 +8,16 @@ import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.FeedStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.time.Instant;
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.utils.EventType.FRIEND;
+import static ru.yandex.practicum.filmorate.utils.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.utils.Operation.ADD;
+import static ru.yandex.practicum.filmorate.utils.Operation.REMOVE;
 
 @Service
 @Slf4j
@@ -19,6 +26,8 @@ public class UserServiceImpl implements UserService {
 
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
+
+    private final FeedStorage feedStorage;
 
     @Override
     public User create(User user) {
@@ -68,6 +77,8 @@ public class UserServiceImpl implements UserService {
             userStorage.setStatus(id1, id2, true);
             log.info(String.format("Пользователи c id %s и %s теперь друзья.", id1, id2));
         }
+        feedStorage.addFeed(id2, id1, Instant.now().toEpochMilli(), FRIEND, ADD);
+
     }
 
     @Override
@@ -82,6 +93,7 @@ public class UserServiceImpl implements UserService {
         log.info(String.format("Пользователи c id %s и %s теперь не друзья", id1, id2));
         userStorage.deleteFriend(id1, id2);
         userStorage.setStatus(id2, id1, false);
+        feedStorage.addFeed(id2, id1, Instant.now().toEpochMilli(), LIKE, REMOVE);
     }
 
     @Override

@@ -60,6 +60,12 @@ public class FilmController {
         return filmService.getTopFilms(from, size);
     }
 
+    @GetMapping("/films/director/{directorId}")
+    public List<Film> getFilmByDirector(@PathVariable Long directorId,
+                                        @RequestParam(defaultValue = "year") String sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
     @DeleteMapping("/films/{id}")
     public void delete(@PathVariable Long id) {
         filmService.delete(id);

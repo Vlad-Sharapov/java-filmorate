@@ -7,18 +7,19 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import javax.transaction.Transactional;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.utils.EventType.LIKE;
+import static ru.yandex.practicum.filmorate.utils.Operation.ADD;
 
 @Service
 @Slf4j
@@ -35,12 +36,16 @@ public class FilmServiceImpl implements FilmService {
 
     private final GenreStorage genreStorage;
 
+    private final DirectorStorage directorStorage;
+
     private final MpaStorage mpaStorage;
+
+    private final FeedStorage feedStorage;
 
     @Override
     public List<Film> getAllFilms(Integer from, Integer size) {
         List<Film> films = filmStorage.films(from, size);
-        return addGenresToFilms(films);
+        return addGenresAndDirectorsToFilms(films);
 
     }
 
@@ -57,6 +62,7 @@ public class FilmServiceImpl implements FilmService {
                 .rate(numOfLikes(id))
                 .build();
         filmStorage.filmGenresUpdate(addedFilm);
+        filmStorage.filmDirectorsUpdate(addedFilm);
         List<Genre> filmGenres = genreStorage.getFilmGenres(id);
         addedFilm.setGenres(filmGenres);
         log.info("Добавлен фильм: {}", film);
@@ -73,6 +79,7 @@ public class FilmServiceImpl implements FilmService {
         }
         filmStorage.update(film);
         filmStorage.filmGenresUpdate(film);
+        filmStorage.filmDirectorsUpdate(film);
         Mpa mpa = mpaStorage.getMpa(mpaId);
         return film.toBuilder()
                 .mpa(mpa)
@@ -89,9 +96,11 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film findFilm(Long id) {
         List<Genre> filmGenres = genreStorage.getFilmGenres(id);
+        List<Director> filmDirectors = directorStorage.getDirectorsByFilmId(id);
         Film film = filmStorage.findFilm(id);
         return film.toBuilder()
                 .genres(filmGenres)
+                .directors(filmDirectors)
                 .build();
     }
 
@@ -103,7 +112,7 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public List<Film> getTopFilms(Integer from,  Integer size) {
         List<Film> films = filmStorage.topFilms(from, size);
-        return addGenresToFilms(films);
+        return addGenresAndDirectorsToFilms(films);
     }
 
     @Override
@@ -112,6 +121,7 @@ public class FilmServiceImpl implements FilmService {
         User user = userStorage.findUserById(userId);
         likeStorage.addLike(user.getId(), film.getId());
         log.info(String.format("Количество лайков для фильма %s: %s", film.getName(), filmStorage.numOfLikes(filmId)));
+        feedStorage.addFeed(filmId, userId, Instant.now().toEpochMilli(), LIKE, ADD);
     }
 
     @Override
@@ -120,6 +130,13 @@ public class FilmServiceImpl implements FilmService {
         User user = userStorage.findUserById(userId);
         likeStorage.removeLike(user.getId(), film.getId());
         log.info(String.format("Количество лайков для фильма %s: %s", film.getName(), filmStorage.numOfLikes(filmId)));
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        Director director = directorStorage.getDirectorById(directorId);
+        List<Film> filmsByDirector = filmStorage.getFilmsByDirector(directorId, sortBy);
+        return addGenresAndDirectorsToFilms(filmsByDirector);
     }
 
     private void checkValidation(Film film) {
@@ -147,13 +164,15 @@ public class FilmServiceImpl implements FilmService {
         }
     }
 
-    private List<Film> addGenresToFilms(List<Film> films) {
+    private List<Film> addGenresAndDirectorsToFilms(List<Film> films) {
         List<Long> filmsIds = films.stream()
                 .map(Film::getId)
                 .collect(Collectors.toList());
         Map<Long, List<Genre>> filmsGenres=genreStorage.getFilmsGenres(filmsIds);
+        Map<Long, List<Director>> filmsDirectors = directorStorage.getFilmsDirectors(filmsIds);
         return films.stream().map(film -> film.toBuilder()
                         .genres(filmsGenres.getOrDefault(film.getId(), List.of()))
+                        .directors(filmsDirectors.getOrDefault(film.getId(), List.of()))
                         .build())
                 .collect(Collectors.toList());
     }

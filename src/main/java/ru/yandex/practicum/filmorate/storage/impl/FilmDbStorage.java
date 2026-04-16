@@ -123,7 +123,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilmsByIds(List<Long> ids,  Integer from, Integer size) {
+    public List<Film> getFilmsByIds(List<Long> ids, Integer from, Integer size) {
         if (ids == null || ids.isEmpty()) {
             return List.of();
         }
@@ -172,8 +172,31 @@ public class FilmDbStorage implements FilmStorage {
             Film film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), name);
             return film;
         } catch (EmptyResultDataAccessException e) {
-            return  null;
+            return null;
         }
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Long directorId, String sortBy) {
+        if (directorId == null || directorId == 0) {
+            throw new FilmNotFoundException("Режиссер не найден.");
+        }
+        String sql = "SELECT f.id, f.name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.MPA_ID, " +
+                "M.NAME mpa_name, " +
+                "COUNT(e.user_id) rate " +
+                "FROM films f " +
+                "LEFT JOIN enjoy e ON f.id = e.film_id " +
+                "LEFT JOIN mpa M on f.MPA_ID = M.id " +
+                "LEFT JOIN film_director d ON d.film_id = f.id " +
+                "WHERE d.director_id = ? " +
+                "GROUP BY f.id " +
+                "ORDER BY " + getOrderBy(sortBy) + ";";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), directorId);
     }
 
     @Override
@@ -223,6 +246,26 @@ public class FilmDbStorage implements FilmStorage {
                         genre.getId()));
     }
 
+    @Override
+    public void filmDirectorsUpdate(Film film) {
+
+        String sqlFilmDirectors = "INSERT INTO film_director (film_id, director_id) VALUES (?,?) ";
+
+        String sqlDeleteDirectors = "DELETE film_director WHERE film_id = ?";
+
+        jdbcTemplate.update(sqlDeleteDirectors, film.getId());
+
+        if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
+            return;
+        }
+        film.getDirectors().stream()
+                .distinct()
+                .forEach(director -> jdbcTemplate.update(sqlFilmDirectors,
+                        film.getId(),
+                        director.getId()));
+
+    }
+
 
     private Film makeFilm(ResultSet rs) throws SQLException {
         Long id = rs.getLong("id");
@@ -242,5 +285,14 @@ public class FilmDbStorage implements FilmStorage {
                 .mpa(Mpa.builder().id(mpaId).name(mpaName).build())
                 .rate(rate)
                 .build();
+    }
+
+
+    private String getOrderBy(String sortBy) {
+        return switch (sortBy) {
+            case "likes" -> "COUNT(e.user_id) ";
+            case "year" -> "f.release_date ";
+            default -> "f.id ASC";
+        };
     }
 }
