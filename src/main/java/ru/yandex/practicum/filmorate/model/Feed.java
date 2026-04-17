@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,6 +16,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class Feed {
 
+    @JsonProperty("eventId")
     private Long id;
     @NotBlank
     private Long userId;

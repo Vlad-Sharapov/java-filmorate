@@ -47,7 +47,7 @@ public class FeedStorageImpl implements FeedStorage {
 
         String sql = "SELECT * FROM event_feed " +
                 "WHERE user_id = ? " +
-                "ORDER BY id";
+                "ORDER BY timestamp";
         return jdbcTemplate.query(sql, this::makeFeed, id);
     }
 
