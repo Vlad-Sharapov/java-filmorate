@@ -45,7 +45,7 @@ public class FilmDbStorage implements FilmStorage {
                 "LEFT JOIN mpa m ON f.MPA_ID = m.ID " +
                 "GROUP BY f.id " +
                 "LIMIT ? OFFSET ?";
-        List<Film> films = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), size, offset);
+        List<Film> films = jdbcTemplate.query(sqlQuery, this::makeFilm, size, offset);
         log.info("Количество фильмов: {}", films.size());
         return films;
     }
@@ -114,7 +114,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE f.id = ? " +
                 "GROUP BY f.id;";
         try {
-            Film film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), id);
+            Film film = jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, id);
             log.info("Количество фильмов: {}", film);
             return film;
         } catch (EmptyResultDataAccessException e) {
@@ -151,7 +151,7 @@ public class FilmDbStorage implements FilmStorage {
         params.add(size);
         params.add(offset);
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), params.toArray());
+        return jdbcTemplate.query(sql, this::makeFilm, params.toArray());
     }
 
     @Override
@@ -169,7 +169,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE f.NAME = ? " +
                 "GROUP BY f.id, e.film_id;";
         try {
-            Film film = jdbcTemplate.queryForObject(sqlQuery, (rs, rowNum) -> makeFilm(rs), name);
+            Film film = jdbcTemplate.queryForObject(sqlQuery, this::makeFilm, name);
             return film;
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -196,7 +196,7 @@ public class FilmDbStorage implements FilmStorage {
                 "GROUP BY f.id " +
                 "ORDER BY " + getOrderBy(sortBy) + ";";
 
-        return jdbcTemplate.query(sql, (rs, rowNum) -> makeFilm(rs), directorId);
+        return jdbcTemplate.query(sql, this::makeFilm, directorId);
     }
 
     @Override
@@ -225,7 +225,7 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY rate DESC " +
                 "LIMIT ? " +
                 "OFFSET ? ";
-        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeFilm(rs), size, from);
+        return jdbcTemplate.query(sqlQuery, this::makeFilm, size, from);
     }
 
     @Override
@@ -266,8 +266,70 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    @Override
+    public List<Film> getFilmsSearchByTitle(String query) {
+        String sql = "SELECT f.id, f.name, " +
+        "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.mpa_id, " +
+                "M.NAME mpa_name, " +
+                "COUNT(e.user_id) rate " +
+                "FROM films f " +
+                "LEFT JOIN enjoy e on f.id = e.film_id " +
+                "LEFT JOIN mpa M on f.MPA_ID = M.id " +
+                "WHERE f.name ILIKE '%'||?||'%' " +
+                "GROUP BY f.id " +
+                "ORDER BY rate DESC";
+        return jdbcTemplate.query(sql, this::makeFilm, query);
+    }
 
-    private Film makeFilm(ResultSet rs) throws SQLException {
+    @Override
+    public List<Film> getFilmsSearchByDirectorAndTitle(String query) {
+        String sql = "SELECT f.id, f.name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.mpa_id, " +
+                "M.NAME mpa_name, " +
+                "COUNT(e.user_id) rate " +
+                "FROM films f " +
+                "LEFT JOIN enjoy e on f.id = e.film_id " +
+                "LEFT JOIN mpa M on f.MPA_ID = M.id " +
+                "WHERE f.name ILIKE '%'||?||'%' OR " +
+                "f.id IN " +
+                "(SELECT fd.film_id FROM film_director fd " +
+                "LEFT JOIN directors d ON fd.director_id = d.id " +
+                "WHERE d.name ILIKE '%'||?||'%') " +
+                "GROUP BY f.id " +
+                "ORDER BY rate DESC";
+
+        return jdbcTemplate.query(sql, this::makeFilm, query, query);
+    }
+
+    @Override
+    public List<Film> getFilmsSearchByDirector(String query) {
+
+        String sql = "SELECT f.id, f.name, " +
+                "f.description, " +
+                "f.release_date, " +
+                "f.duration, " +
+                "f.MPA_ID, " +
+                "M.NAME mpa_name, " +
+                "COUNT(e.user_id) rate " +
+                "FROM films f " +
+                "LEFT JOIN enjoy e ON f.id = e.film_id " +
+                "LEFT JOIN mpa M on f.MPA_ID = M.id " +
+                "LEFT JOIN film_director fd ON fd.film_id = f.id " +
+                "JOIN directors AS d ON d.id = fd.director_id " +
+                "WHERE d.name ILIKE '%'||?||'%' " +
+                "GROUP BY f.id " +
+                "ORDER BY rate DESC";
+
+        return jdbcTemplate.query(sql, this::makeFilm, query);
+    }
+
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         Long id = rs.getLong("id");
         String name = rs.getString("name");
         String description = rs.getString("description");

@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
         log.info(String.format("Пользователи c id %s и %s теперь не друзья", id1, id2));
         userStorage.deleteFriend(id1, id2);
         userStorage.setStatus(id2, id1, false);
-        feedStorage.addFeed(id2, id1, Instant.now().toEpochMilli(), LIKE, REMOVE);
+        feedStorage.addFeed(id2, id1, Instant.now().toEpochMilli(), FRIEND, REMOVE);
     }
 
     @Override

@@ -14,12 +14,15 @@ import ru.yandex.practicum.filmorate.storage.*;
 import javax.transaction.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.utils.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.utils.Operation.ADD;
+import static ru.yandex.practicum.filmorate.utils.Operation.REMOVE;
 
 @Service
 @Slf4j
@@ -68,6 +71,7 @@ public class FilmServiceImpl implements FilmService {
         log.info("Добавлен фильм: {}", film);
         return addedFilm;
     }
+
     @Transactional
     @Override
     public Film update(Film film) {
@@ -110,7 +114,7 @@ public class FilmServiceImpl implements FilmService {
     }
 
     @Override
-    public List<Film> getTopFilms(Integer from,  Integer size) {
+    public List<Film> getTopFilms(Integer from, Integer size) {
         List<Film> films = filmStorage.topFilms(from, size);
         return addGenresAndDirectorsToFilms(films);
     }
@@ -130,6 +134,7 @@ public class FilmServiceImpl implements FilmService {
         User user = userStorage.findUserById(userId);
         likeStorage.removeLike(user.getId(), film.getId());
         log.info(String.format("Количество лайков для фильма %s: %s", film.getName(), filmStorage.numOfLikes(filmId)));
+        feedStorage.addFeed(filmId, userId, Instant.now().toEpochMilli(), LIKE, REMOVE);
     }
 
     @Override
@@ -137,6 +142,26 @@ public class FilmServiceImpl implements FilmService {
         Director director = directorStorage.getDirectorById(directorId);
         List<Film> filmsByDirector = filmStorage.getFilmsByDirector(directorId, sortBy);
         return addGenresAndDirectorsToFilms(filmsByDirector);
+    }
+
+    @Override
+    public List<Film> searchFilm(String query, String by) {
+        List<String> list = new ArrayList<>(Arrays.asList(by.split(",")));
+
+        if (list.size() == 2) {
+            List<Film> films = filmStorage.getFilmsSearchByDirectorAndTitle(query);
+            return addGenresAndDirectorsToFilms(films);
+        }
+        if (list.get(0).equalsIgnoreCase("title")) {
+            List<Film> films =  filmStorage.getFilmsSearchByTitle(query);
+            return addGenresAndDirectorsToFilms(films);
+        }
+        if (list.get(0).equalsIgnoreCase("director")) {
+            List<Film> films =  filmStorage.getFilmsSearchByDirector(query);
+            return addGenresAndDirectorsToFilms(films);
+        } else
+            throw new IllegalArgumentException("unexpected param <by> - " + by);
+
     }
 
     private void checkValidation(Film film) {
@@ -168,7 +193,7 @@ public class FilmServiceImpl implements FilmService {
         List<Long> filmsIds = films.stream()
                 .map(Film::getId)
                 .collect(Collectors.toList());
-        Map<Long, List<Genre>> filmsGenres=genreStorage.getFilmsGenres(filmsIds);
+        Map<Long, List<Genre>> filmsGenres = genreStorage.getFilmsGenres(filmsIds);
         Map<Long, List<Director>> filmsDirectors = directorStorage.getFilmsDirectors(filmsIds);
         return films.stream().map(film -> film.toBuilder()
                         .genres(filmsGenres.getOrDefault(film.getId(), List.of()))

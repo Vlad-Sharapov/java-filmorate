@@ -30,4 +30,10 @@ public interface FilmStorage {
 
     List<Film> getFilmsByDirector(Long directorId, String sortBy);
 
-    }
+    public List<Film> getFilmsSearchByTitle(String query);
+
+    public List<Film> getFilmsSearchByDirectorAndTitle(String query);
+
+    public List<Film> getFilmsSearchByDirector(String query);
+
+}
