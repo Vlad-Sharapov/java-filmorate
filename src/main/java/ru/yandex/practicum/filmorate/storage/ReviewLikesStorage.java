@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.storage;
 
 public interface ReviewLikesStorage {
-    void like(int reviewId, int userId);
+    void like(Long reviewId, Long userId);
 
-    void dislike(int reviewId, int userId);
+    void dislike(Long reviewId, Long userId);
 
-    void deleteLike(int reviewId, int userId);
+    void deleteLike(Long reviewId, Long userId);
 
-    void deleteDislike(int reviewId, int userId);
+    void deleteDislike(Long reviewId, Long userId);
 }

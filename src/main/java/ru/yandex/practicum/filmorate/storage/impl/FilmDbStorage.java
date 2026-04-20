@@ -352,8 +352,8 @@ public class FilmDbStorage implements FilmStorage {
 
     private String getOrderBy(String sortBy) {
         return switch (sortBy) {
-            case "likes" -> "COUNT(e.user_id) ";
-            case "year" -> "f.release_date ";
+            case "likes" -> "COUNT(e.user_id) DESC";
+            case "year" -> "f.release_date ASC";
             default -> "f.id ASC";
         };
     }

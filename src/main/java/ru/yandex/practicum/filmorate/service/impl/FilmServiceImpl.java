@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmNotFoundException;
+import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.service.FilmService;
@@ -56,6 +57,8 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film create(Film film) throws EmptyResultDataAccessException {
         checkValidation(film);
+        checkFilmDirectorsExist(film);
+        checkFilmGenreExist(film);
         Integer mpaId = film.getMpa().getId();
         Mpa mpa = mpaStorage.getMpa(mpaId);
         Long id = filmStorage.create(film);
@@ -65,6 +68,7 @@ public class FilmServiceImpl implements FilmService {
                 .rate(numOfLikes(id))
                 .build();
         filmStorage.filmGenresUpdate(addedFilm);
+
         filmStorage.filmDirectorsUpdate(addedFilm);
         List<Genre> filmGenres = genreStorage.getFilmGenres(id);
         addedFilm.setGenres(filmGenres);
@@ -76,6 +80,8 @@ public class FilmServiceImpl implements FilmService {
     @Override
     public Film update(Film film) {
         checkValidation(film);
+        checkFilmDirectorsExist(film);
+        checkFilmGenreExist(film);
         Integer mpaId = film.getMpa().getId();
         if (!checkFilmExist(film.getId())) {
             log.warn(String.format("Фильм с id - %s не найден", film.getId()));
@@ -105,6 +111,7 @@ public class FilmServiceImpl implements FilmService {
         return film.toBuilder()
                 .genres(filmGenres)
                 .directors(filmDirectors)
+
                 .build();
     }
 
@@ -186,6 +193,36 @@ public class FilmServiceImpl implements FilmService {
             return true;
         } catch (FilmNotFoundException e) {
             return false;
+        }
+    }
+
+    private void checkFilmDirectorsExist(Film film) {
+        if (film.getDirectors() == null || film.getDirectors().isEmpty()) {
+            return;
+        }
+
+        List<Long> directorIds = film.getDirectors().stream()
+                .map(Director::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (!directorStorage.directorsExist(directorIds)) {
+            throw new UserNotFoundException("Один или несколько режиссёров не найдены");
+        }
+    }
+
+    private void checkFilmGenreExist(Film film) {
+        if (film.getGenres() == null || film.getGenres().isEmpty()) {
+            return;
+        }
+
+        List<Integer> filmGenresId = film.getGenres().stream()
+                .map(Genre::getId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        if (!genreStorage.genreExist(filmGenresId)) {
+            throw new UserNotFoundException("Один или несколько жанров не найдено");
         }
     }
 

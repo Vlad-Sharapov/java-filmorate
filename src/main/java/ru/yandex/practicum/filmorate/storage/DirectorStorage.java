@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
 import java.util.Map;
@@ -21,5 +20,7 @@ public interface DirectorStorage {
     List<Director> getDirectorsByFilmId(Long filmId);
 
     Map<Long, List<Director>> getFilmsDirectors(List<Long> ids);
+
+    boolean directorsExist(List<Long> ids);
 
 }

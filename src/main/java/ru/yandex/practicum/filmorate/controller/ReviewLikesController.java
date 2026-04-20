@@ -12,22 +12,22 @@ public class ReviewLikesController {
     private final ReviewLikesService reviewLikesService;
 
     @PutMapping("/{id}/like/{userId}")
-    public void likeReview(@PathVariable int id, @PathVariable int userId) {
+    public void likeReview(@PathVariable Long id, @PathVariable Long userId) {
         reviewLikesService.like(id, userId);
     }
 
     @PutMapping("/{id}/dislike/{userId}")
-    public void dislikeReview(@PathVariable int id, @PathVariable int userId) {
+    public void dislikeReview(@PathVariable Long id, @PathVariable Long userId) {
         reviewLikesService.dislike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLikeReview(@PathVariable int id, @PathVariable int userId) {
+    public void deleteLikeReview(@PathVariable Long id, @PathVariable Long userId) {
         reviewLikesService.deleteLike(id, userId);
     }
 
     @DeleteMapping("/{id}/dislike/{userId}")
-    public void deleteDislikeReview(@PathVariable int id, @PathVariable int userId) {
+    public void deleteDislikeReview(@PathVariable Long id, @PathVariable Long userId) {
         reviewLikesService.deleteDislike(id, userId);
     }
 }

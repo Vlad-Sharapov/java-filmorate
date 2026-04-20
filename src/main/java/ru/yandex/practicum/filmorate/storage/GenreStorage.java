@@ -14,4 +14,6 @@ public interface GenreStorage {
     List<Genre> getFilmGenres(Long id);
 
     Map<Long, List<Genre>> getFilmsGenres(List<Long> ids);
+
+    boolean genreExist(List<Integer> ids);
     }

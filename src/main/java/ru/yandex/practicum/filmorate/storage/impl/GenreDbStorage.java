@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @Slf4j
@@ -79,6 +80,25 @@ public class GenreDbStorage implements GenreStorage {
         }, ids.toArray());
 
         return result;
+    }
+
+    @Override
+    public boolean genreExist(List<Integer> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return true;
+        }
+
+        List<Integer> uniqIds = ids.stream()
+                .distinct()
+                .collect(Collectors.toList());
+
+        String placeholders = String.join(",", Collections.nCopies(ids.size(), "?"));
+
+        String sql = "SELECT COUNT(*) FROM genre WHERE id in (" + placeholders + ")";
+
+        Integer genres = jdbcTemplate.queryForObject(sql, Integer.class, uniqIds.toArray());
+
+        return genres == uniqIds.size();
     }
 
     private Genre makeGenre(ResultSet rs) throws SQLException {

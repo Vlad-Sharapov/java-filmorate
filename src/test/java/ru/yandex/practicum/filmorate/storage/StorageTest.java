@@ -56,17 +56,25 @@ public abstract class StorageTest {
     }
 
     private void cleanDb() {
+        jdbcTemplate.update("DELETE FROM review_likes");
+        jdbcTemplate.update("DELETE FROM reviews");
+        jdbcTemplate.update("DELETE FROM event_feed");
         jdbcTemplate.update("DELETE FROM enjoy");
         jdbcTemplate.update("DELETE FROM friends");
         jdbcTemplate.update("DELETE FROM film_genres");
+        jdbcTemplate.update("DELETE FROM film_director");
         jdbcTemplate.update("DELETE FROM films");
         jdbcTemplate.update("DELETE FROM users");
+        jdbcTemplate.update("DELETE FROM directors");
 
+        jdbcTemplate.update("ALTER TABLE reviews ALTER COLUMN id RESTART WITH 1");
+        jdbcTemplate.update("ALTER TABLE event_feed ALTER COLUMN id RESTART WITH 1");
         jdbcTemplate.update("ALTER TABLE enjoy ALTER COLUMN id RESTART WITH 1");
         jdbcTemplate.update("ALTER TABLE friends ALTER COLUMN id RESTART WITH 1");
         jdbcTemplate.update("ALTER TABLE film_genres ALTER COLUMN id RESTART WITH 1");
         jdbcTemplate.update("ALTER TABLE films ALTER COLUMN id RESTART WITH 1");
         jdbcTemplate.update("ALTER TABLE users ALTER COLUMN id RESTART WITH 1");
+        jdbcTemplate.update("ALTER TABLE directors ALTER COLUMN id RESTART WITH 1");
 
     }
 }

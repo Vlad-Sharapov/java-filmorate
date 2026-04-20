@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -103,6 +104,24 @@ public class DirectorStorageImpl implements DirectorStorage {
             result.computeIfAbsent(filmId, id -> new ArrayList<>()).add(director);
                 }, ids.toArray());
         return result;
+    }
+
+    @Override
+    public boolean directorsExist(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return true;
+        }
+
+        List<Long> uniqueIds = ids.stream()
+                .distinct()
+                .collect(Collectors.toList());
+
+        String placeholders = String.join(",", Collections.nCopies(uniqueIds.size(), "?"));
+
+        String sql = "SELECT COUNT(*) FROM directors WHERE id IN (" + placeholders + ")";
+
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, uniqueIds.toArray());
+        return count == uniqueIds.size();
     }
 
     private Director makeDirector(ResultSet rs, int rowNum) throws SQLException {

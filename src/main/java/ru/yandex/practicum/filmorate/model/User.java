@@ -14,11 +14,9 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 public class User {
     private Long id;
-    @NotNull
     @Email
     @NotBlank
     private String email;
-    @NotNull
     @NotBlank
     private String login;
     @Past

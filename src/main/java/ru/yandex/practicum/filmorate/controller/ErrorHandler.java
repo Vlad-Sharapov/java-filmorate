@@ -37,9 +37,17 @@ public class ErrorHandler {
         return new ErrorResponse(false, message);
     }
 
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleEntityNotValidException(final ValidationException e) {
+        return new ErrorResponse(false, e.getMessage());
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleDateTimeParseException(final HttpMessageNotReadableException e) {
+
         return new ErrorResponse(false, e.getMessage());
     }
 

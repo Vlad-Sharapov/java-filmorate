@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.service;
 
 public interface ReviewLikesService {
 
-    public void like(int reviewId, int userId);
+    void like(Long reviewId, Long userId);
 
-    public void dislike(int reviewId, int userId);
+    void dislike(Long reviewId, Long userId);
 
-    public void deleteLike(int reviewId, int userId);
+    void deleteLike(Long reviewId, Long userId);
 
-    public void deleteDislike(int reviewId, int userId);
+    void deleteDislike(Long reviewId, Long userId);
 }

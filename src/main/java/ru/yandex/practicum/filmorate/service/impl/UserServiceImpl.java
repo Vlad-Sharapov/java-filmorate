@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.util.List;
 
 import static ru.yandex.practicum.filmorate.utils.EventType.FRIEND;
-import static ru.yandex.practicum.filmorate.utils.EventType.LIKE;
 import static ru.yandex.practicum.filmorate.utils.Operation.ADD;
 import static ru.yandex.practicum.filmorate.utils.Operation.REMOVE;
 
