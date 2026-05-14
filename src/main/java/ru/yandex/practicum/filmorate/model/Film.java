@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Data;
 
@@ -18,12 +19,16 @@ public class Film {
     private String name;
     private String description;
     private LocalDate releaseDate;
-    @PositiveOrZero
+    @PositiveOrZero(message = "Продолжительность фильма должно быть больше либо равно 0")
     private Long duration;
 
     private Mpa mpa;
 
     private List<Genre> genres;
     private Integer rate;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<Director> directors;
+
 }
 

@@ -7,7 +7,7 @@ import java.util.List;
 public interface UserStorage {
     List<User> users();
 
-    User create(User user);
+    Long create(User user);
 
     User update(User user);
 
@@ -23,8 +23,15 @@ public interface UserStorage {
 
     boolean setStatus(Long userId1, Long userId2, boolean status);
 
+    boolean getFriendsStatus(Long userId1, Long userId2);
+
     User findUserById(Long id);
 
     List<User> getCommonFriends(Long id1, Long id2);
+
+
+    boolean checkUserExist(String email);
+
+    boolean checkUserExist(Long id);
 
     }

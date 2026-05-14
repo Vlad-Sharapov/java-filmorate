@@ -2,11 +2,12 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.FilmsRecommendationsService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -16,23 +17,24 @@ import java.util.List;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 public class UserController {
-    @Qualifier("UserDbStorage")
-    private final UserStorage userStorage;
+
     private final UserService userService;
+
+    private final FilmsRecommendationsService filmsRecommendationsService;
 
     @GetMapping()
     public List<User> users() {
-        return userStorage.users();
+        return userService.users();
     }
 
     @GetMapping("/{id}")
     public User users(@PathVariable Long id) {
-        return userStorage.findUserById(id);
+        return userService.findUserById(id);
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        return userStorage.create(user);
+        return userService.create(user);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
@@ -55,13 +57,20 @@ public class UserController {
         return userService.commonFriends(id, otherId);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<Film> recommendations(@PathVariable Long id,
+                                      @RequestParam(defaultValue = "0") Integer from,
+                                      @RequestParam(defaultValue = "10") Integer size) {
+        return filmsRecommendationsService.getRecommendationFilms(id,  from, size);
+    }
+
     @PutMapping
     public User update(@Valid @RequestBody User user) {
-        return userStorage.update(user);
+        return userService.update(user);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
-        userStorage.delete(id);
+        userService.delete(id);
     }
 }

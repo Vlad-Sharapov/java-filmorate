@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -6,10 +6,11 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserNotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Friends;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,7 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
-@Component("UserDbStorage")
+@Repository("UserDbStorage")
 @Slf4j
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
@@ -33,13 +34,10 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public User create(User user) {
+    public Long create(User user) {
         String sqlQuery = "INSERT INTO users (email, login, name, birthday) " +
                 "VALUES (?,?,?,?)";
-        if (checkUserExist(user.getEmail()))
-            throw new ValidationException("Пользователь с такой почтой уже существует");
-        entityValidation(user);
-        changeEmptyName(user);
+
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(con -> {
@@ -51,23 +49,12 @@ public class UserDbStorage implements UserStorage {
             return ps;
         }, keyHolder);
         Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        user.setId(id);
-        log.info("Добавлен пользователь: {}", user);
-        return user;
+        return id;
     }
 
     @Override
     public User update(User user) {
         String sqlQuery = "UPDATE users SET email=?, login=?, name=?, birthday=? WHERE id = ?";
-
-        if (!checkUserExist(user.getId())) {
-            log.warn("Пользователь с id - {} не найден", user.getEmail());
-            throw new UserNotFoundException(String.format("Пользователь %s не найден", user.getEmail()));
-        }
-        entityValidation(user);
-        changeEmptyName(user);
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, user.getEmail());
@@ -76,10 +63,7 @@ public class UserDbStorage implements UserStorage {
             ps.setObject(4, user.getBirthday());
             ps.setLong(5, user.getId());
             return ps;
-        }, keyHolder);
-        Long id = Objects.requireNonNull(keyHolder.getKey()).longValue();
-        user.setId(id);
-        log.info("Пользователь обновлен: {}", user);
+        });
         return user;
     }
 
@@ -149,20 +133,17 @@ public class UserDbStorage implements UserStorage {
         return true;
     }
 
-    private void entityValidation(User saveUser) {
-        if (saveUser.getLogin().contains(" ")) {
-            log.warn("Некорректные данные (Аргумент параметра \"login\" имеет пробелы).");
-            throw new ValidationException();
-        }
+    @Override
+    public boolean getFriendsStatus(Long userId1, Long userId2) {
+        String sqlQuery = "SELECT status From friends WHERE user_id1 = ? AND user_id2 = ?";
+        return Boolean.TRUE.equals(jdbcTemplate.queryForObject(sqlQuery,
+                (rs, rowNum) -> rs.getBoolean("status"),
+                userId1,
+                userId2));
     }
 
-    private void changeEmptyName(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-    }
-
-    private boolean checkUserExist(String email) {
+    @Override
+    public boolean checkUserExist(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         try {
             jdbcTemplate.queryForObject(sql, (rs, rowNum) -> makeUser(rs), email);
@@ -171,8 +152,8 @@ public class UserDbStorage implements UserStorage {
             return false;
         }
     }
-
-    private boolean checkUserExist(Long id) {
+    @Override
+    public boolean checkUserExist(Long id) {
         try {
             findUserById(id);
             return true;
@@ -199,6 +180,5 @@ public class UserDbStorage implements UserStorage {
         return User.builder().id(id).email(email).login(login).name(name).birthday(birthday).build();
     }
 }
-
 
 
